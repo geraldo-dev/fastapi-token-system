@@ -10,7 +10,8 @@ router = APIRouter(prefix='/user')  # accounts sign
 
 @router.post('/register', status_code=201)
 def user_register(user: UserModel, db_session: Session = Depends(get_db)):
-    n_user = UserCase(db_session)
+    n_user = UserCase(user, db_session)
     # valida se ja exite esse usuario
-    x_user = n_user.created_user(user)
-    return {'data': x_user}
+    n_user.check_by_username()
+
+    return n_user.created_user()
