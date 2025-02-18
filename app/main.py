@@ -1,7 +1,9 @@
 from fastapi import FastAPI
-from app.database import engine, Base
+from app import routes
 
 app = FastAPI()
+
+app.include_router(routes.router, tags=['users'])
 
 
 @app.get('/')
