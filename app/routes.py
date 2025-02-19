@@ -1,18 +1,16 @@
-# from app.models import User
-from app.schemas import UserModel, UserModelResponse
+from app.schemas import UserModel
 from app.database import get_db
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 from app.auth import UserCase, Toke
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
-router = APIRouter(prefix='/user')  # accounts sign
+router = APIRouter(prefix='/user')
 
 oauth_scheme = OAuth2PasswordBearer(tokenUrl='/user/login')
 
+
 # depends
-
-
 def token_verifier(
     db_session: Session = Depends(get_db),
     token=Depends(oauth_scheme)

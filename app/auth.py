@@ -83,7 +83,6 @@ class Toke:
         self.__db_session = db_session
 
     def token_verifier(self, access_token):
-        print('------', access_token)
         try:
             data = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITM])
         except JWTError:
@@ -92,12 +91,11 @@ class Toke:
                 detail='Invalid access token'
             )
 
-        # user_on_db = self.__db_session.query(
-        #     User).filter_by(username=data['sub']).first()
-        # print('------', user_on_db)
+        user_on_db = self.__db_session.query(
+            User).filter_by(username=data['sub']).first()
 
-        # if user_on_db is None:
-        #     raise HTTPException(
-        #         status_code=401,
-        #         detail='Invalid access token'
-        #     )
+        if user_on_db is None:
+            raise HTTPException(
+                status_code=401,
+                detail='Invalid access token'
+            )
