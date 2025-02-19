@@ -1,15 +1,20 @@
+from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError
 from app.models import User
 from app.schemas import UserModel
-from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from fastapi import HTTPException
 from datetime import datetime, timedelta
+import os
 
-SECRET_KEY = 'DBFDLBDSFHBFA'
-ALGORITM = 'HS256'
+# loads the environment variables
+load_dotenv()
+
+DATABASE_URL = os.getenv('DATABASE_URL')
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITM = os.getenv('ALGORITM')
 
 
 crypt_context = CryptContext(schemes=['sha256_crypt'])
@@ -45,7 +50,7 @@ class UserCase:
 
         if user:
             raise HTTPException(
-                status_code=400, detail='username ja exister')
+                status_code=400, detail='username already exists')
         return False
 
     def login_user(self, expires_in: int = 30):
@@ -57,7 +62,7 @@ class UserCase:
                 status_code=401, detail='Invalid username or password'
             )
 
-        if not crypt_context.verify(self.__password, find_user.password):
+        if not crypt_context.verify(self.__password, str(find_user.password)):
             raise HTTPException(
                 status_code=401, detail='Invalid username or password'
             )
@@ -69,9 +74,10 @@ class UserCase:
             'exp': exp
         }
 
-        access_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITM)
+        access_token = jwt.encode(payload, str(
+            SECRET_KEY), algorithm=str(ALGORITM))
 
-        # modelo de entrega da respontas
+        # response delivery model otherwise the header does not find the token
         return {
             'access_token': access_token,
             'exp': exp.isoformat()
@@ -84,7 +90,8 @@ class Toke:
 
     def token_verifier(self, access_token):
         try:
-            data = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITM])
+            data = jwt.decode(access_token, str(SECRET_KEY),
+                              algorithms=[str(ALGORITM)])
         except JWTError:
             raise HTTPException(
                 status_code=401,

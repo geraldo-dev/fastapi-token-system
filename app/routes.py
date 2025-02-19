@@ -1,28 +1,16 @@
 from app.schemas import UserModel
-from app.database import get_db
+from app.depends import get_db, token_verifier
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
-from app.auth import UserCase, Toke
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from app.auth import UserCase
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(prefix='/user')
-
-oauth_scheme = OAuth2PasswordBearer(tokenUrl='/user/login')
-
-
-# depends
-def token_verifier(
-    db_session: Session = Depends(get_db),
-    token=Depends(oauth_scheme)
-):
-    uc = Toke(db_session)
-    uc.token_verifier(access_token=token)
 
 
 @router.post('/register', status_code=201)
 def user_register(user: UserModel, db_session: Session = Depends(get_db)):
     n_user = UserCase(user, db_session)
-    # valida se ja exite esse usuario
     n_user.check_by_username()
 
     return n_user.created_user()
@@ -44,9 +32,6 @@ def user_login(
     return result
 
 
-test_router = APIRouter(dependencies=[Depends(token_verifier)])
-
-
-@test_router.get('/test')
-def test_user_verify():
+@router.get('/test')
+def test_user_verify(dependencies=Depends(token_verifier)):
     return 'ok welocome api fastapi'
