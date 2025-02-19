@@ -1,7 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 from app.models import User
 from app.schemas import UserModel
-# from app.database import get_db
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -20,6 +20,9 @@ class UserCase:
         self.__username = user.username
         self.__password = user.password
         self.__db_session = db_session
+
+    def get_user(self):
+        print(self.__username)
 
     def created_user(self):
         __user_model = User(
@@ -68,4 +71,33 @@ class UserCase:
 
         access_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITM)
 
-        return access_token
+        # modelo de entrega da respontas
+        return {
+            'access_token': access_token,
+            'exp': exp.isoformat()
+        }
+
+
+class Toke:
+    def __init__(self, db_session: Session):
+        self.__db_session = db_session
+
+    def token_verifier(self, access_token):
+        print('------', access_token)
+        try:
+            data = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITM])
+        except JWTError:
+            raise HTTPException(
+                status_code=401,
+                detail='Invalid access token'
+            )
+
+        # user_on_db = self.__db_session.query(
+        #     User).filter_by(username=data['sub']).first()
+        # print('------', user_on_db)
+
+        # if user_on_db is None:
+        #     raise HTTPException(
+        #         status_code=401,
+        #         detail='Invalid access token'
+        #     )

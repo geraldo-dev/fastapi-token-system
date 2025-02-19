@@ -4,6 +4,7 @@ from app import routes
 app = FastAPI()
 
 app.include_router(routes.router, tags=['users'])
+app.include_router(routes.test_router, tags=['test'])
 
 
 @app.get('/')
